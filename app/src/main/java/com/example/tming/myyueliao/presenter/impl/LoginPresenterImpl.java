@@ -1,5 +1,7 @@
 package com.example.tming.myyueliao.presenter.impl;
 
+import android.util.Log;
+
 import com.example.tming.myyueliao.adapter.EMCallBackAdapter;
 import com.example.tming.myyueliao.presenter.LoginPresenter;
 import com.example.tming.myyueliao.utils.StringUtils;
@@ -56,6 +58,7 @@ public class LoginPresenterImpl implements LoginPresenter{
 
         @Override
         public void onError(int i, String s) {
+            Log.e(TAG,"登录失败："+s);
             ThreadUtils.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {

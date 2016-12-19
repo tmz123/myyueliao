@@ -2,28 +2,56 @@ package com.example.tming.myyueliao.app;
 
 import android.app.ActivityManager;
 import android.app.Application;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.BitmapFactory;
+import android.media.AudioManager;
+import android.media.SoundPool;
 import android.util.Log;
 
+import com.example.tming.myyueliao.R;
+import com.example.tming.myyueliao.adapter.EMMessageListenerAdapter;
+import com.example.tming.myyueliao.database.DatabaseManager;
+import com.example.tming.myyueliao.ui.activity.ChatActivity;
 import com.hyphenate.chat.EMClient;
+import com.hyphenate.chat.EMMessage;
 import com.hyphenate.chat.EMOptions;
+import com.hyphenate.chat.EMTextMessageBody;
 
 import java.util.Iterator;
 import java.util.List;
 
 import cn.bmob.v3.Bmob;
 
+import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND;
+
 /**
  * Created by lenovo on 2016/12/18.
  */
 public class MyApplication extends Application {
 
-    public static final String TAG = "MyApplication";
+    public static final String TAG = "QQDemoApplication";
+    private int mDuanSound;
+    private int mYuluSound;
+    private SoundPool mSoundPool;
+
     @Override
     public void onCreate() {
         super.onCreate();
         initEM();
         initBmob();
+        initSoundPool();
+        DatabaseManager.getInstance().init(this);
+        EMClient.getInstance().chatManager().addMessageListener(mEMMessageListenerAdapter);
+    }
+
+    private void initSoundPool() {
+        mSoundPool = new SoundPool(2, AudioManager.STREAM_MUSIC, 0);
+        mDuanSound = mSoundPool.load(this, R.raw.duan, 1);
+        mYuluSound = mSoundPool.load(this, R.raw.yulu, 1);
     }
 
     private void initBmob() {
@@ -70,5 +98,55 @@ public class MyApplication extends Application {
             }
         }
         return processName;
+    }
+
+    private EMMessageListenerAdapter mEMMessageListenerAdapter = new EMMessageListenerAdapter() {
+
+        @Override
+        public void onMessageReceived(List<EMMessage> list) {
+            if (isForeground()) {
+                mSoundPool.play(mDuanSound, 1, 1, 0, 0, 1);
+            } else {
+                mSoundPool.play(mYuluSound, 1, 1, 0, 0, 1);
+                showNotification(list.get(0));
+            }
+        }
+    };
+
+    private void showNotification(EMMessage emMessage) {
+        String contentText = "";
+        if (emMessage.getBody() instanceof EMTextMessageBody) {
+            contentText = ((EMTextMessageBody) emMessage.getBody()).getMessage();
+        }
+
+        Intent chat = new Intent(this, ChatActivity.class);
+        chat.putExtra(Constant.Extra.USER_NAME, emMessage.getUserName());
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 1, chat, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        Notification notification = new Notification.Builder(this)
+                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.avatar1))
+                .setSmallIcon(R.mipmap.ic_contact_selected_2)
+                .setContentTitle(getString(R.string.receive_new_message))
+                .setContentText(contentText)
+                .setPriority(Notification.PRIORITY_MAX)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true)
+                .build();
+        notificationManager.notify(1, notification);
+    }
+
+    public boolean isForeground() {
+        ActivityManager am = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+        List<ActivityManager.RunningAppProcessInfo> runningAppProcesses = am.getRunningAppProcesses();
+        if (runningAppProcesses == null) {
+            return false;
+        }
+        for (ActivityManager.RunningAppProcessInfo info :runningAppProcesses) {
+            if (info.processName.equals(getPackageName()) && info.importance == IMPORTANCE_FOREGROUND) {
+                return true;
+            }
+        }
+        return false;
     }
 }
