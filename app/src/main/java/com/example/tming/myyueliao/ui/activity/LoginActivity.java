@@ -15,7 +15,7 @@ import butterknife.BindView;
 import butterknife.OnClick;
 
 /**
- * Created by lenovo on 2016/12/18.
+ * Created by tming on 2016/12/18.
  */
 public class LoginActivity extends BaseActivity implements LoginView{
 

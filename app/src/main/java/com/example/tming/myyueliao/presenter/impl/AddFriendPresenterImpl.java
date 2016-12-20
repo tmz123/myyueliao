@@ -87,6 +87,7 @@ public class AddFriendPresenterImpl implements AddFriendPresenter {
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
     public void addFriend(AddFriendEvent event) {
         try {
+            //参数为要添加的好友的username和添加理由
             EMClient.getInstance().contactManager().addContact(event.getFriendName(), event.getReason());
             ThreadUtils.runOnUiThread(new Runnable() {
                 @Override

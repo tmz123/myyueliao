@@ -3,7 +3,6 @@ package com.example.tming.myyueliao.ui.activity;
 import android.support.annotation.IdRes;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.widget.FrameLayout;
 
 import com.example.tming.myyueliao.R;
 import com.example.tming.myyueliao.factory.FragmentFactory;
@@ -18,7 +17,7 @@ import butterknife.BindView;
 public class MainActivity extends BaseActivity {
 
     @BindView(R.id.bottomBar)
-    BottomBar mBottomBar;
+    public BottomBar mBottomBar;
     private FragmentManager mFragmentManager;
 
     @Override
@@ -40,4 +39,5 @@ public class MainActivity extends BaseActivity {
             fragmentTransaction.replace(R.id.fragment_container, FragmentFactory.getInstance().getFragment(tabId)).commit();
         }
     };
+
 }
